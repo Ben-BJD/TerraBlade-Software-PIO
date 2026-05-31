@@ -40,7 +40,10 @@ public:
     template <typename T> void printError(T& s) {}
 };
 extern FakeUpdate Update;
+
+#if defined(NATIVE_TESTING)
 inline FakeUpdate Update;
+#endif
 
 // 3. Update the FakeWebServer to use our real HTTPUpload structure
 class FakeWebServer {
@@ -56,9 +59,20 @@ public:
         _mockUpload.buf = nullptr;
     }
 
+    // FIX: Allows wm.server.get() to compile on desktop by returning a raw pointer to itself
+    FakeWebServer* get() { 
+        return this; 
+    }
+
+    // Allows normal -> routing calls to work if needed elsewhere
+    FakeWebServer* operator->() { 
+        return this; 
+    }
+
     void on(const char* uri, int method, std::function<void()> handler) {}
     void on(const char* uri, int method, std::function<void()> handler, std::function<void()> uploadHandler) {}
     void send(int code, const char* content_type, const char* content) {}
+    void send(int code, const char* content_type, std::string content) {}
     
     // Returns a reference to our mutable mock upload tracking object
     HTTPUpload& upload() { 
@@ -66,25 +80,31 @@ public:
     }
 };
 
+using WebServer = FakeWebServer;
+
 // The main class definition to satisfy the compiler
 class WiFiManager {
 public:
-    FakeWebServer* server = new FakeWebServer();
+    // FIX: Changed from a raw pointer to a stack instance.
+    // This allows the desktop compiler to support the dot syntax `wm.server.get()`
+    FakeWebServer server; 
 
     WiFiManager() {}
-    ~WiFiManager() { delete server; }
+    ~WiFiManager() {}
 
     void setAPCallback(void (*func)(WiFiManager*)) {}
     void setConfigPortalTimeout(int seconds) {}
     void setDebugOutput(bool debug) {}
-    void setMenu(std::vector<const char*>& menu) {}
+    
+    // Fixed: Changed from reference to pass-by-value vector to match the production layout
+    void setMenu(std::vector<const char*> menu) {} 
     void setTitle(const char* title) {}
     void setCustomMenuHTML(const char* html) {}
     
     // Forces execution of the callback immediately during native tests
     // so that your internal lambda routes compile and run cleanly
     void setWebServerCallback(std::function<void()> cb) { 
-        cb(); 
+        if(cb) cb(); 
     } 
     
     bool autoConnect(const char* apName, const char* apPassword) { return true; }

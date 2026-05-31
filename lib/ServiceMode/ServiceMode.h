@@ -26,6 +26,7 @@ class ServiceMode {
     static void IRAM_ATTR onFactoryReset();
     static void configModeCallback(WiFiManager *wiFiManager);
     static void onError(const std::string& errorMsg);
+    static void clearConfig();
 
     static State getState() { return _currentState; }
 

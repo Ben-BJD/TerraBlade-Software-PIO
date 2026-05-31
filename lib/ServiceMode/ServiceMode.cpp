@@ -71,10 +71,9 @@ void ServiceMode::init()
 
     // --- Handle the Routes ---
     // This serves the upload form
-    auto* serverPtr = wm.server; // Grab the raw pointer to the server sub-component
-
-    wm.setWebServerCallback([serverPtr, update_html]() 
+    wm.setWebServerCallback([&wm, update_html]() 
     {
+        WebServer* serverPtr = wm.server.get();
         // Capture the raw pointer by value. 
         // The pointer address stays identical, so it references the exact same web server.
         serverPtr->on("/update", HTTP_GET, [serverPtr, update_html]() {
@@ -94,21 +93,21 @@ void ServiceMode::init()
             {
                 if (!Update.begin(UPDATE_SIZE_UNKNOWN)) 
                 {
-                    ServiceMode::onError("Failed to begin update: " + upload.filename);
+                    ServiceMode::onError("Failed to begin update: " + std::string(upload.filename.c_str()));
                 }
             } 
             else if (upload.status == UPLOAD_FILE_WRITE) 
             {
                 if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) 
                 {
-                    ServiceMode::onError("Failed to write update: " + upload.filename);
+                    ServiceMode::onError("Failed to write update: " + std::string(upload.filename.c_str()));
                 }
             } 
             else if (upload.status == UPLOAD_FILE_END) 
             {
                 if (!Update.end(true))
                 {
-                    ServiceMode::onError("Failed to complete update: " + upload.filename);
+                    ServiceMode::onError("Failed to complete update: " + std::string(upload.filename.c_str()));
                 }
             }
         });
@@ -136,12 +135,18 @@ void ServiceMode::init()
     }
 }
 
+void ServiceMode::clearConfig()
+{
+    WiFiManager wm;
+    wm.resetSettings();
+}
+
 void ServiceMode::onError(const std::string& errorMsg)
 {
     _currentState = State::Error;
     digitalWrite(_ledPin, LOW); // Turn off the LED since we're no longer in config mode
     delay(1000);
-    ESP.restart();
+    //ESP.restart();
 }
 
 // 3. The actual raw ISR execution block
