@@ -3,6 +3,9 @@
 // This header is included by all test files, and serves as a central place to manage test dependencies and common test setup.
 // It conditionally includes the ArduinoFake library and sets up global mocks when running in a native desktop environment, while doing nothing when running on real hardware. This allows test code to be written once and run seamlessly in both environments.
 
+#include "WiFi.h"
+WiFiClass WiFi;
+
 // If we are on native desktop, we need the simulation mocks
 #if defined(NATIVE_TESTING)
     #include <ArduinoFake.h>
@@ -16,6 +19,13 @@
     inline void interrupts() {}
     inline void noInterrupts() {}
 
+    // Empty define so the desktop compiler ignores it
+    #define IRAM_ATTR
+
+    // Fix digitalPinToInterrupt for the desktop compiler
+    #undef digitalPinToInterrupt
+    #define digitalPinToInterrupt(pin) (pin) // Just returns the pin number directly
+
     #define D0 0
     #define D1 1
     #define D2 2
@@ -27,6 +37,8 @@
     #define D8 8
     #define D9 9
     #define D10 10
+    
+    MockEspClass ESP;
 
     inline void init_test_mocks() 
     {
