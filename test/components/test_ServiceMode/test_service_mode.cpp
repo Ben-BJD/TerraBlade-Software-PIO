@@ -2,6 +2,7 @@
 #include "../../test_helpers.h"                 // Pull in our decoupling helper
 #include "../../../include/secrets.h"           // Pull in test WiFi credentials
 #include "../../../include/terrablade_config.h" // Pull in the config to get pin definitions
+#include <WiFi.h>
 #include <ServiceMode.h>
 
 ServiceMode* testServiceMode = nullptr;

@@ -3,11 +3,12 @@
 // This header is included by all test files, and serves as a central place to manage test dependencies and common test setup.
 // It conditionally includes the ArduinoFake library and sets up global mocks when running in a native desktop environment, while doing nothing when running on real hardware. This allows test code to be written once and run seamlessly in both environments.
 
-#include "WiFi.h"
-WiFiClass WiFi;
-
 // If we are on native desktop, we need the simulation mocks
 #if defined(NATIVE_TESTING)
+
+    #include "WiFi.h"
+    WiFiClass WiFi;
+
     #include <ArduinoFake.h>
     using namespace fakeit;
 

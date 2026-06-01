@@ -146,7 +146,7 @@ void ServiceMode::onError(const std::string& errorMsg)
     _currentState = State::Error;
     digitalWrite(_ledPin, LOW); // Turn off the LED since we're no longer in config mode
     delay(1000);
-    //ESP.restart();
+    ESP.restart();
 }
 
 // 3. The actual raw ISR execution block
