@@ -1,5 +1,11 @@
 #define RESET_BUTTON_PIN 3
 #define LED_PIN 4
+
+#define PROBE_POWER_PIN 10
+#define PROBE_SIGNAL_PIN 5
+
+#define BATTERY_PIN A0
+
 #define AP_TITLE "TerraBlade Sensor Config"
 //Expires March 29, 2031
 const char* tspeak_ca_cert_root =  R"EOF(

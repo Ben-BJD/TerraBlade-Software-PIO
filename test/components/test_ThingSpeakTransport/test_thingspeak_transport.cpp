@@ -46,7 +46,7 @@ void setUp(void)
     #if !defined(NATIVE_TESTING)
     // DIAGNOSTIC FALLBACK: If the certificate string is corrupt, this stops the panic.
     // Try this first. If it works, your certificate macro layout has a string literal bug.
-    secureClient.setInsecure(); 
+    //secureClient.setInsecure(); 
     
     // If you want to use the strict root CA instead, uncomment the line below and comment out setInsecure()
     // secureClient.setCACert(tspeak_ca_cert_root);
@@ -84,14 +84,6 @@ void test_tspeak_transmission()
     #endif
 }
 
-int runUnityTests(void) 
-{
-    UNITY_BEGIN();
-    RUN_TEST(test_tspeak_transmission);
-    UNITY_END();
-    return 0;
-}
-
 /**
  * Structural Execution Handlers
  */
@@ -99,7 +91,10 @@ int runUnityTests(void)
 extern "C" {
     int main(int argc, char **argv) 
     {
-        return runUnityTests();
+        UNITY_BEGIN();
+        RUN_TEST(test_tspeak_transmission);
+        UNITY_END();
+        return 0;
     }
 }
 #else
@@ -107,6 +102,10 @@ void setup()
 {
     // Fire up hardware UART pipeline instantly
     Serial.begin(115200);
+
+    while (!Serial) {
+        delay(10);
+    }
 
     delay(3000); // Give the ESP32 serial monitor time to connect
     
@@ -117,15 +116,14 @@ void setup()
     initWifi();
     
     Serial.println("[SYSTEM] Invoking Unity Test Framework Engine...");
-    runUnityTests();
+    Serial.flush();
+    
+    UNITY_BEGIN();
+    RUN_TEST(test_tspeak_transmission);
+    UNITY_END();
 
     Serial.println("\n[SYSTEM] Testing complete. Holding stable loop...");
 }
 
-void loop() 
-{
-    // Keep the CPU cleanly ticking over here forever so PlatformIO 
-    // can comfortably read the buffers and exit on its own terms.
-    delay(1000);
-}
+void loop() {}
 #endif
