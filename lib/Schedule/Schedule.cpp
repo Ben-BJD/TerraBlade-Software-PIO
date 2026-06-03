@@ -71,9 +71,17 @@ void Schedule::initialize()
 
 void Schedule::enterDeepSleep() 
 {
+
 #if defined(NATIVE_TESTING)
-    has_attempted_sleep = true; // Your test checks this instead of freezing your PC
+    // 1. Desktop simulation tracking
+    has_attempted_sleep = true; 
+
+#elif defined(UNIT_TEST)
+   has_attempted_sleep = true; 
+
 #else
+    // 3. PRODUCTION HARDWARE RUNTIME
+    // This only executes during standard deployments ('pio run' / upload)
     esp_deep_sleep_start();
 #endif
 }

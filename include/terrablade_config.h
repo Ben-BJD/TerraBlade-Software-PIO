@@ -6,6 +6,8 @@
 
 #define BATTERY_PIN A0
 
+#define SLEEP_TIME_SECONDS 7200//2 hours
+
 #define AP_TITLE "TerraBlade Sensor Config"
 //Expires March 29, 2031
 const char* tspeak_ca_cert_root =  R"EOF(

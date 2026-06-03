@@ -42,7 +42,7 @@ typedef enum {
 // A lightweight stub of the global WiFi class
 class WiFiClass {
 private:
-    wl_status_t _mockStatus = WL_DISCONNECTED;
+    wl_status_t _mockStatus = WL_CONNECTED;
 
 public:
     // Methods to allow your production code to compile
