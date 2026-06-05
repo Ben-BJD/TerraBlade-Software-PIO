@@ -1,6 +1,6 @@
 ---
 Date: 2026-06-03
-Topic: Initial Project Planning
+Topic: Initial Specs Planning
 Tool: OpenCode (Qwen3.6 + Obra)
 ---
 
