@@ -7,7 +7,8 @@ int Sensor::_probePowerPin = -1;
 int Sensor::_probeSignalPin = -1;
 int Sensor::_batteryPin = -1;
 
-Sensor::Sensor(int probePowerPin, int probeSignalPin, int batteryPin) 
+Sensor::Sensor(int probePowerPin, int probeSignalPin, int batteryPin, long dryFreq, long wetFreq) 
+    : _dryFreq(dryFreq), _wetFreq(wetFreq)
 {
     _probePowerPin = probePowerPin;
     _probeSignalPin = probeSignalPin;
@@ -86,4 +87,18 @@ float Sensor::measureBatteryVoltage()
     }
     float Vbattf = 2 * Vbatt / 16 / 1000.0;     // attenuation ratio 1/2, mV --> V
     return Vbattf;
+}
+
+float Sensor::calculateMoisturePercent(long frequency)
+{
+    // Perform constrained linear interpolation
+    // Map frequency from [_wetFreq, _dryFreq] to [100, 0]
+    float moisture = ((float)(frequency - _wetFreq)) / ((float)(_dryFreq - _wetFreq)) * 100.0;
+    
+    // Constrain to 0-100%
+    if (moisture > 100.0) moisture = 100.0;
+    if (moisture < 0.0) moisture = 0.0;
+    
+    // Invert so that higher frequency = lower moisture
+    return 100.0 - moisture;
 }

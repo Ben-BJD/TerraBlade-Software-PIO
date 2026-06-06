@@ -10,7 +10,7 @@ Sensor* testSensor = nullptr;
 void setUp(void) 
 {
     init_test_mocks();
-    testSensor = new Sensor(PROBE_POWER_PIN, PROBE_SIGNAL_PIN, BATTERY_PIN);
+    testSensor = new Sensor(PROBE_POWER_PIN, PROBE_SIGNAL_PIN, BATTERY_PIN, DRY_FREQUENCY, WET_FREQUENCY);
 }
 
 void tearDown(void) 
@@ -37,6 +37,17 @@ void test_sensor_initialization(void)
     #endif
 }
 
+void test_calculate_moisture_percent(void) 
+{
+    TEST_ASSERT_NOT_NULL(testSensor);
+    testSensor->initialise();
+    float dry = testSensor->calculateMoisturePercent(DRY_FREQUENCY);
+    float wet = testSensor->calculateMoisturePercent(WET_FREQUENCY);
+
+    TEST_ASSERT_EQUAL(0.0, dry);
+    TEST_ASSERT_EQUAL(100.0, wet);
+}
+
 /**
  * Structural Execution Handlers
  */
@@ -45,6 +56,7 @@ int main(int argc, char **argv)
 {
     UNITY_BEGIN();
     RUN_TEST(test_sensor_initialization);
+    RUN_TEST(test_calculate_moisture_percent);
     return UNITY_END();
 }
 #else
@@ -65,6 +77,7 @@ void setup()
     // 3. Run your tests cleanly
     UNITY_BEGIN();
     RUN_TEST(test_sensor_initialization);
+    RUN_TEST(test_calculate_moisture_percent);
     UNITY_END();
     Serial.println("\n[SYSTEM] Testing complete. Holding stable loop...");
 }

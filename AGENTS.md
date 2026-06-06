@@ -1,13 +1,15 @@
 # AGENTS.md
 
+- **DO NOT attempt to run terminal commands, platformio builds, or unit tests.** I will compile and run all tests manually and provide you with the terminal output.
+- **DO NOT modify platformio.ini.**
+- **Testing Framework:** We use Unity and `ArduinoFake`. If writing native tests, you must use standard ArduinoFake syntax for mocking hardware calls.
+
 ## Key Commands
-- **Build for ESP32**: Do not build for the device. Only run native tests.
-- **Native testing**: `pio test -e native`
-- **Upload to device**: Do not upload to the device. Only run native tests.
+- **Build for ESP32**: Do not build for the device. 
+- **Native testing**: I will compile and run all tests manually
+- **Upload to device**: Do not upload to the device. 
 
 ## Environment Notes
-- Use `native` env for Unity tests (requires `-D NATIVE_TESTING`).
-- ESP32 build uses custom partitions (`ota_partitions.csv`).
 - WiFiManager@2.0.17 and ThingSpeak@2.1.1 required for board builds.
 - ArduinoFake only used in native testing (ignored in ESP32 builds).
 

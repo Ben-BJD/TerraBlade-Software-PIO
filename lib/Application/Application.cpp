@@ -51,7 +51,7 @@ void Application::init(bool debug)
         Schedule scheduler(SLEEP_TIME_SECONDS, RESET_BUTTON_PIN);
         scheduler.initialize();
 
-        Sensor sensor(PROBE_POWER_PIN, PROBE_SIGNAL_PIN, BATTERY_PIN);
+        Sensor sensor(PROBE_POWER_PIN, PROBE_SIGNAL_PIN, BATTERY_PIN, DRY_FREQUENCY, WET_FREQUENCY);
         sensor.initialise();
 
         WiFiClientSecure wifiClient;
@@ -66,6 +66,7 @@ void Application::init(bool debug)
         //We can do this by mapping the raw value to a 0-100 range based on our calibration data.
         //For example, if our calibration data tells us that a raw value of 100000 corresponds to 0% moisture (completely dry) 
         //and a raw value of 13000 corresponds to 100% moisture (fully saturated)
+        //we created Sensor::calculateMoisturePercent() to do this mapping for us.
         //further we need to add range checks to ensure we don't report values outside of 0-100% due to sensor noise or anomalies.
 
         //Transmission

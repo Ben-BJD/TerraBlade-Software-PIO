@@ -30,10 +30,11 @@
 class Sensor {
   public:
   
-    Sensor(int probePowerPin, int probeSignalPin, int batteryPin);
+    Sensor(int probePowerPin, int probeSignalPin, int batteryPin, long dryFreq, long wetFreq);
     void initialise();
     long measureSoilMoisture();
     float measureBatteryVoltage();
+    float calculateMoisturePercent(long frequency);
     
     static void IRAM_ATTR countPulse();
 
@@ -42,6 +43,8 @@ class Sensor {
     static int _probeSignalPin;
     static int _batteryPin;
     static volatile uint32_t _pulse_count;
+    long _dryFreq;
+    long _wetFreq;
 };
 
 #endif
