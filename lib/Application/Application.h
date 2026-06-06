@@ -20,7 +20,7 @@ class Application {
     static State getState() { return _currentState; }
 
   private:
-
+    static bool isValidMoistureReading(long moistureValue);
     static State _currentState;
 };
 

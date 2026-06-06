@@ -14,6 +14,11 @@
 #define PREF_NAMESPACE "terrablade"
 #define BOOT_COUNT_KEY "boot_count"
 
+#define WIFI_TIMEOUT_MILLISECONDS 10000
+
+#define TRANSMISSION_RETRY_DELAY_MILLISECONDS 1000
+#define TRANSMISSION_MAX_RETRIES 3
+
 #define AP_TITLE "TerraBlade Sensor Config"
 //Expires March 29, 2031
 const char* tspeak_ca_cert_root =  R"EOF(

@@ -12,6 +12,11 @@ Application::State Application::_currentState = Application::State::Uninitialize
 
 Application::Application(){}
 
+bool Application::isValidMoistureReading(long moistureValue) {
+    // Check if moisture value is within valid range (0-100%)
+    return (moistureValue >= 0 && moistureValue <= 100);
+}
+
 void Application::init(bool debug) 
 {
     //Service Mode must be initialised first to ensure we can connect to Wi-Fi before doing anything else
@@ -38,15 +43,24 @@ void Application::init(bool debug)
 
     if( ServiceMode::State::Configured == ServiceMode::getState() )
     {
-        //TODO: We have Wi-Fi credentials but need guards here to ensure WI-Fi is actually connected before trying to do anything else
-        // - this is a known point of failure that needs to be hardened with retry logic and timeouts to ensure we don't get stuck here 
-        //indefinitely if there is a network issue or the credentials are wrong.
-
+        // Connect to WiFi with 10s timeout
         _currentState = State::WifiConnecting;
-        while (WiFi.status() != WL_CONNECTED) 
+        unsigned long startAttemptTime = millis();
+        
+        while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT_MILLISECONDS) 
+        {
+            delay(300);
+        }
+        
+        if (WiFi.status() != WL_CONNECTED) 
         {
             _currentState = State::WifiConnectingError;
-            delay(300);
+            // WiFi connection failed, go to sleep
+            if(!debug) 
+            {
+                scheduler.enterDeepSleep();
+            }
+            return;
         }
 
         //Initialisation
@@ -60,15 +74,22 @@ void Application::init(bool debug)
         int bootCount = scheduler.getBootCount();
         long soilMoisture = sensor.measureSoilMoisture();
         float batteryVoltage = sensor.measureBatteryVoltage();
+        
+        // Convert raw frequency to percentage and validate
+        long moisturePercent = sensor.calculateMoisturePercent(soilMoisture);
+        
+        // If the sensor fails or returns out-of-bounds frequencies, abort transmission
+        if (!isValidMoistureReading(moisturePercent)) 
+        {
+            // Invalid moisture reading, go straight to deep sleep without sending data
+            if(!debug) 
+            {
+                scheduler.enterDeepSleep();
+            }
+            return;
+        }
 
-        //TODO: soilMoisture returns a raw htz value that we want to convert to a percentage for the dashboard. 
-        //We can do this by mapping the raw value to a 0-100 range based on our calibration data.
-        //For example, if our calibration data tells us that a raw value of 100000 corresponds to 0% moisture (completely dry) 
-        //and a raw value of 13000 corresponds to 100% moisture (fully saturated)
-        //we created Sensor::calculateMoisturePercent() to do this mapping for us.
-        //further we need to add range checks to ensure we don't report values outside of 0-100% due to sensor noise or anomalies.
-
-        //Transmission
+        //Transmission with retry logic (3 attempts)
         _currentState = State::TelemetryTransmitting;
         
         telemetryTransport.mapField("soilMoisture", 1);
@@ -77,12 +98,28 @@ void Application::init(bool debug)
         telemetryTransport.begin();
 
         std::vector<TelemetryTransport::DataPoint> payload = {
-            {"soilMoisture", static_cast<long>(soilMoisture)},
+            {"soilMoisture", static_cast<long>(moisturePercent)},
             {"Vbattf", std::string(std::to_string(batteryVoltage))},
             {"bootCount", static_cast<long>(bootCount)}
         };
 
-        TelemetryTransport::ResultState result = telemetryTransport.transmit(payload);
+        // Retry logic: Attempt transmission up to n times
+        TelemetryTransport::ResultState result = TelemetryTransport::ResultState::Uninitialized;
+        int maxRetries = TRANSMISSION_MAX_RETRIES;
+        int retries = 0;
+        
+        while (retries < maxRetries) {
+            result = telemetryTransport.transmit(payload);
+            
+            if (result == TelemetryTransport::ResultState::Success) {
+                break; // Success, exit retry loop
+            }
+            
+            retries++;
+            if (retries < maxRetries) {
+                delay(TRANSMISSION_RETRY_DELAY_MILLISECONDS); // Wait before retrying
+            }
+        }
         
         if(TelemetryTransport::ResultState::Success == result)
         {
@@ -97,15 +134,20 @@ void Application::init(bool debug)
         else
         {
             _currentState = State::TelemetryTransmittingError;
-            //TODO: Handle different error states (NetworkError, ProviderError, ValidationError)
-            // This is critical for robustness and should be expanded with retry logic
+            // Any transmission error after retries triggers immediate deep sleep to preserve battery
+            if(!debug) 
+            {
+                scheduler.enterDeepSleep();
+            }
         } 
     }
     else
     {
         _currentState = State::ServiceModeError;
-        //TODO: If we get here it means something went wrong with Service Mode.
-        //Likely due to a timeout hosting the captive portal.
-        //Here we should have some retry logic to attempt to re-enter Service Mode a few times before giving up.
+        // Service Mode failed, go to sleep
+        if(!debug) 
+        {
+            scheduler.enterDeepSleep();
+        }
     }
 }

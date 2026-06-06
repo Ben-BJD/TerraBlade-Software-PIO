@@ -18,7 +18,7 @@ Topic: Soil Moisture Architecture Design
 ## TelemetryTransport Library
 - **ITransport Interface**: Handles data transmission.
 - **ThingSpeakTransport Class**:
-  - Sends data to ThingSpeak with retry logic.
+  - Sends data to ThingSpeak
 
 ## Schedule Library
 - Manages deep sleep intervals.
@@ -32,8 +32,7 @@ Topic: Soil Moisture Architecture Design
 - Connects to WiFi with 10s timeout.
 - Orchestrates boot flow:
   1. Check wake reason (timer/button)
-  2. If timer: read sensor, transmit data
-  3. If button: enter Service Mode
+  2. Read sensor, transmit data
   4. Handle errors centrally, trigger deep sleep on failure
 
 # State Machine Flow
