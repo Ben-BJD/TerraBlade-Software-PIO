@@ -191,13 +191,12 @@ bool ServiceMode::checkDoubleTap()
     int bootCount = prefs.getInt(_bootCountKey, 0);
     prefs.end();
     
-    if (bootCount >= 2) {
+    if (bootCount >= 1) {
         resetBootCount();
         return true;
     }
     
     incrementBootCount();
-    
     // Wait for 3 seconds to see if we survive
     delay(3000);
     
