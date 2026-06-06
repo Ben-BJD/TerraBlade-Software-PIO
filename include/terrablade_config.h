@@ -11,6 +11,9 @@
 #define DRY_FREQUENCY 106000
 #define WET_FREQUENCY 13000
 
+#define PREF_NAMESPACE "terrablade"
+#define BOOT_COUNT_KEY "boot_count"
+
 #define AP_TITLE "TerraBlade Sensor Config"
 //Expires March 29, 2031
 const char* tspeak_ca_cert_root =  R"EOF(

@@ -28,7 +28,7 @@ void waitForHardwareState(ServiceMode::State targetState, const char* message) {
 void setUp(void) 
 {
     init_test_mocks();
-    testServiceMode = new ServiceMode(LED_PIN, RESET_BUTTON_PIN, AP_TITLE, AP_SSID, AP_PASSWORD);
+    testServiceMode = new ServiceMode(LED_PIN, RESET_BUTTON_PIN, AP_TITLE, AP_SSID, AP_PASSWORD, PREF_NAMESPACE, BOOT_COUNT_KEY);
     ServiceMode::clearConfig(); // Ensure we start with a clean slate for each test
 }
 
@@ -36,6 +36,20 @@ void tearDown(void)
 {
     delete testServiceMode;
     testServiceMode = nullptr;
+}
+
+void test_service_mode_double_tap(void) 
+{
+    // Test the double-tap detection logic by simulating the timing of power cycles.
+    // Since we can't actually power cycle the device in a unit test, we will directly call the method and manipulate the internal state to simulate the effect.
+    ServiceMode::resetBootCount(); // Start with a known boot count state
+    // Simulate the first boot
+    ServiceMode::incrementBootCount();
+    // Simulate the second boot within the double-tap window
+    ServiceMode::incrementBootCount();
+    // Now check if the double-tap logic would trigger a reset
+    bool doubleTapDetected = ServiceMode::checkDoubleTap();
+    TEST_ASSERT_TRUE(doubleTapDetected);
 }
 
 void test_service_mode_initialization(void) 
@@ -86,6 +100,7 @@ void test_on_error_transitions_to_error_state()
 int runUnityTests(void) 
 {
     UNITY_BEGIN();
+    RUN_TEST(test_service_mode_double_tap);
     RUN_TEST(test_service_mode_initialization);
     RUN_TEST(test_captive_portal_state_transition);
     RUN_TEST(test_on_error_transitions_to_error_state);

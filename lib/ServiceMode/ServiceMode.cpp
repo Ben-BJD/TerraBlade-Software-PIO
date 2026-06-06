@@ -15,13 +15,20 @@ const char* ServiceMode::_apPassword = nullptr;
 // Allocate and initialize the starting state
 ServiceMode::State ServiceMode::_currentState = ServiceMode::State::Uninitialized;
 
-ServiceMode::ServiceMode(int ledPin, int btnPin, const char* apTitle, const char* apSSID, const char* apPassword)
+// Preferences constants
+const char* ServiceMode::_prefNamespace = "terrablade";
+const char* ServiceMode::_bootCountKey = "boot_count";
+
+ServiceMode::ServiceMode(int ledPin, int btnPin, const char* apTitle, const char* apSSID, const char* apPassword,
+                         const char* prefNamespace, const char* bootCountKey)
 {
     _ledPin = ledPin;
     _btnPin = btnPin;
     _apTitle = apTitle;
     _apSSID = apSSID;
     _apPassword = apPassword;
+    _prefNamespace = prefNamespace;
+    _bootCountKey = bootCountKey;
 }
 
 void ServiceMode::init()
@@ -132,6 +139,9 @@ void ServiceMode::init()
         // If you get here, you have successfully connected to the local router!
         //The ESP will continue with the rest of your setup() code after this init() function finishes.
         _currentState = State::Configured;
+        
+        // Reset boot count after successful WiFi connection
+        resetBootCount();
     }
 }
 
@@ -172,4 +182,44 @@ void ServiceMode::configModeCallback(WiFiManager *wiFiManager)
 {
     _currentState = State::CaptivePortalActive;
     digitalWrite(_ledPin, HIGH);
+}
+
+bool ServiceMode::checkDoubleTap()
+{
+    Preferences prefs;
+    prefs.begin(_prefNamespace, true); // read-only mode
+    int bootCount = prefs.getInt(_bootCountKey, 0);
+    prefs.end();
+    
+    if (bootCount >= 2) {
+        resetBootCount();
+        return true;
+    }
+    
+    incrementBootCount();
+    
+    // Wait for 3 seconds to see if we survive
+    delay(3000);
+    
+    // If we reach here, we survived the 3 seconds, so reset the count
+    resetBootCount();
+    return false;
+}
+
+void ServiceMode::incrementBootCount()
+{
+    Preferences prefs;
+    prefs.begin(_prefNamespace, false); // read-write mode
+    int bootCount = prefs.getInt(_bootCountKey, 0);
+    bootCount++;
+    prefs.putInt(_bootCountKey, bootCount);
+    prefs.end();
+}
+
+void ServiceMode::resetBootCount()
+{
+    Preferences prefs;
+    prefs.begin(_prefNamespace, false); // read-write mode
+    prefs.putInt(_bootCountKey, 0);
+    prefs.end();
 }

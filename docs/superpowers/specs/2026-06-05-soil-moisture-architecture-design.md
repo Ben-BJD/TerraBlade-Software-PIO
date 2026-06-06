@@ -22,11 +22,10 @@ Topic: Soil Moisture Architecture Design
 
 ## Schedule Library
 - Manages deep sleep intervals.
-- Configurable sleep duration via Service Mode.
 
 ## ServiceMode Library
 - Triggers captive portal on "Double-Tap" reset/power cycling.
-- Collects WiFi credentials, calibration values, and sleep interval.
+- Collects WiFi credentials
 - Optionally upload new firmware
 
 ## Application Facade
@@ -54,7 +53,7 @@ Topic: Soil Moisture Architecture Design
 1. Trigger from a "Double-Tap" feature on the reset button/power cycling or if Wifi Credentials are missing
 2. Launch captive portal (WiFiManager)
 3. Turn on the LED_PIN (GPIO 4) to give the user visual feedback
-4. Collect: WiFi SSID/password, cal_dry_freq, cal_wet_freq, sleep interval / Optionally upload new firmware
+4. Collect: WiFi SSID/password - Optionally upload new firmware
 5. Save settings, reboot to normal mode
 
 # Error Handling Strategy

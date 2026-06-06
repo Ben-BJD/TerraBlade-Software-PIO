@@ -15,21 +15,23 @@ Application::Application(){}
 void Application::init(bool debug) 
 {
     //Service Mode must be initialised first to ensure we can connect to Wi-Fi before doing anything else
-    ServiceMode serviceMode(LED_PIN, RESET_BUTTON_PIN, AP_TITLE, AP_SSID, AP_PASSWORD);
+    ServiceMode serviceMode(LED_PIN, RESET_BUTTON_PIN, AP_TITLE, AP_SSID, AP_PASSWORD, PREF_NAMESPACE, BOOT_COUNT_KEY);
 
-    //TODO: We need a way to trigger ServiceMode::clearConfig() here. Include a "Double-Tap" feature on the reset button to allow users 
-    //to force entry into configuration mode if they need to change Wi-Fi credentials or other settings. 
-    //This is critical for usability in the field where users may need to update their network connection without re-flashing the device.
-    //we will use power-cycling to enter config mode
-    //A dedicated component should be made for this
-    //How it works: Device boots up. It reads a value from the EEPROM/Flash memory.
-    //It increments a "Boot Count" to 1.
-    //It waits for 3 seconds.
-    //If it survives the 3 seconds, it resets the count to 0.
-    //The User Experience: To reset the WiFi, you pull the battery out. 
-	//You push the magazine in (Device boots), pull it out 1 second later, and push it in again. The ESP32 sees "Boot Count = 2", 
-    //realizes it was intentionally power-cycled, 
-	//and resets the wifi manager settings so we can reconfigure ServiceMode::clearConfig()
+    Schedule scheduler(SLEEP_TIME_SECONDS, RESET_BUTTON_PIN);
+    scheduler.initialize();
+
+    /*On Power-On Reset, we want to check if the user is trying to trigger a reset into Service Mode by 
+    power-cycling the device in a specific pattern.
+    We don't want to accidentally wipe the user's Wi-Fi credentials every time they power-cycle the device, 
+    so we need a way to differentiate between normal power cycles and intentional ones meant to trigger a reset into Service Mode.
+    Also we don't want to do this for regular deep sleep wakeups*/
+    if(scheduler.getBootSource() == Schedule::BootSource::PowerOnReset)
+    {
+        if ( ServiceMode::checkDoubleTap() ) 
+        {
+            ServiceMode::clearConfig();
+        }
+    }
 
     _currentState = State::ServiceMode;
     serviceMode.init();
@@ -48,9 +50,6 @@ void Application::init(bool debug)
         }
 
         //Initialisation
-        Schedule scheduler(SLEEP_TIME_SECONDS, RESET_BUTTON_PIN);
-        scheduler.initialize();
-
         Sensor sensor(PROBE_POWER_PIN, PROBE_SIGNAL_PIN, BATTERY_PIN, DRY_FREQUENCY, WET_FREQUENCY);
         sensor.initialise();
 

@@ -2,6 +2,7 @@
 #define ServiceMode_h
 
 #include <Arduino.h>
+#include <Preferences.h>
 
 // Note: If you use Approach 1 for native tests, 
 // your platformio.ini will automatically find your native WiFi.h / WiFiManager.h stubs
@@ -18,7 +19,8 @@ class ServiceMode {
         Error               // onError was triggered
     };
 
-    ServiceMode(int ledPin, int btnPin, const char* apTitle, const char* apSSID, const char* apPassword);
+    ServiceMode(int ledPin, int btnPin, const char* apTitle, const char* apSSID, const char* apPassword,
+                const char* prefNamespace, const char* bootCountKey);
     void init();
     void onLoop();
     
@@ -27,6 +29,11 @@ class ServiceMode {
     static void configModeCallback(WiFiManager *wiFiManager);
     static void onError(const std::string& errorMsg);
     static void clearConfig();
+    
+    // Double-tap power cycle detection
+    static bool checkDoubleTap();
+    static void incrementBootCount();
+    static void resetBootCount();
 
     static State getState() { return _currentState; }
 
@@ -39,6 +46,9 @@ class ServiceMode {
     static const char* _apPassword;
 
     static State _currentState;
+    
+    // Preferences namespace and key
+    static const char* _prefNamespace;
+    static const char* _bootCountKey;
 };
-
 #endif
