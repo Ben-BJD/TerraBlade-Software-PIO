@@ -4,6 +4,8 @@
 - [TerraBlade Sensor - Hardware PCB](https://github.com/Ben-BJD/TerraBlade-Sensor-PCB)
 ---
 
+[![Watch the Tutorial](https://img.shields.io/badge/Watch-YouTube_Tutorial-red?style=for-the-badge&logo=youtube)](https://www.youtube.com/watch?v=VNJ1A-dLCrM) [![Read the Article](https://img.shields.io/badge/Read-Website_Article-blue?style=for-the-badge&logo=firefox)](https://bj-dehaan-solutions.com.au/articles/arduino-esp32-iot/I-Let-an-AI-Code-My-ESP32-Sensor-Designing-a-Low-Power-IoT-Capacitive-Soil-Sensor-Part-2)
+
 Professional-grade, ultra-low-power soil moisture sensor software for Seeed XIAO ESP32-C3. Companion repository to the [Hardware PCB](https://github.com/Ben-BJD/TerraBlade-Sensor-PCB) and featured in YouTube Series "Part 2: Building a Production-Grade IoT Sensor (Coming soon ...)".
 
 ## 🔋 Key Software Features
